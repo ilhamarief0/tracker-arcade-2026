@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;800&family=Press+Start+2P&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
   font-family: 'Google Sans', 'Space Grotesk', sans-serif;
   color: #ffffff;
-  background: #19283c;
+  background: #071426;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,9 +22,37 @@ body {
   min-width: 320px;
   margin: 0;
   background:
-    radial-gradient(circle at 12% 8%, rgba(66, 133, 244, 0.18), transparent 24rem),
-    radial-gradient(circle at 88% 10%, rgba(255, 213, 72, 0.12), transparent 22rem),
-    #19283c;
+    radial-gradient(circle at 50% 8%, rgba(255, 92, 102, 0.26), transparent 12rem),
+    radial-gradient(circle at 14% 8%, rgba(0, 240, 255, 0.28), transparent 24rem),
+    radial-gradient(circle at 88% 12%, rgba(255, 213, 72, 0.22), transparent 20rem),
+    linear-gradient(180deg, #08051f 0%, #140a33 42%, #071426 100%);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(255, 255, 255, 0.03) 50%, transparent 50%);
+  background-size: 100% 4px;
+  content: '';
+  opacity: 0.42;
+}
+
+body::after {
+  position: fixed;
+  right: -10vw;
+  bottom: -6vh;
+  left: -10vw;
+  height: 42vh;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 0, 170, 0.32) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.2) 2px, transparent 2px);
+  background-size: 100% 34px, 58px 100%;
+  content: '';
+  opacity: 0.34;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: bottom;
 }
 
 button,
@@ -41,7 +69,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgba(255, 213, 72, 0.48);
+  outline: 3px solid rgba(255, 213, 72, 0.55);
   outline-offset: 3px;
 }
 

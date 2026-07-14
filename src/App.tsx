@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { archivedGameNames, activeGameLinks, skillBadgeLinks } from './constants/labs'
 import { tierRules } from './constants/tiers'
@@ -18,6 +18,10 @@ import {
 } from './lib/arcade'
 import type { AdminForm, Language, OfficialResourcesResponse, ProfileCheckResult, ProfileRecord } from './types/arcade'
 
+const loginPath = '/auth/login'
+
+const getInitialView = () => (window.location.pathname === loginPath ? 'login' : 'main')
+
 function App() {
   const [language, setLanguageState] = useState<Language>(() => (localStorage.getItem(languageStorageKey) === 'id' ? 'id' : 'en'))
   const text = copy[language]
@@ -30,7 +34,7 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(() => Boolean(localStorage.getItem(adminStorageKey)))
   const [adminForm, setAdminForm] = useState<AdminForm>({ password: '', username: '' })
   const [adminStatus, setAdminStatus] = useState('')
-  const [view, setView] = useState<'main' | 'login'>('main')
+  const [view, setView] = useState<'main' | 'login'>(getInitialView)
   const [isRefreshingArcade, setIsRefreshingArcade] = useState(false)
   const [officialResources, setOfficialResources] = useState<OfficialResourcesResponse | null>(() =>
     parseOfficialResources(localStorage.getItem(officialResourcesStorageKey)),
@@ -46,6 +50,20 @@ function App() {
   const points = arcadePoints(resultRecord)
   const pointsNeeded = missingPoints(resultRecord, nextTier)
   const currentTierDisplay = tierDisplay(currentTier, text)
+
+  useEffect(() => {
+    const syncViewWithUrl = () => {
+      setView(getInitialView())
+    }
+
+    window.addEventListener('popstate', syncViewWithUrl)
+    return () => window.removeEventListener('popstate', syncViewWithUrl)
+  }, [])
+
+  const navigateToMain = () => {
+    window.history.pushState(null, '', '/')
+    setView('main')
+  }
 
   const setLanguage = (nextLanguage: Language) => {
     setLanguageState(nextLanguage)
@@ -157,6 +175,7 @@ function App() {
       setIsAdmin(true)
       setAdminForm({ password: '', username: '' })
       setAdminStatus(text.adminLoginSuccess)
+      window.history.replaceState(null, '', '/')
       setView('main')
     } catch (error) {
       setAdminStatus(error instanceof Error ? error.message : text.adminLoginFailed)
@@ -168,6 +187,7 @@ function App() {
     setAdminToken('')
     setIsAdmin(false)
     setAdminStatus(text.adminLogoutSuccess)
+    window.history.replaceState(null, '', '/')
     setView('main')
   }
 
@@ -200,7 +220,7 @@ function App() {
     return (
       <main className="app-shell">
         <header className="topbar">
-          <button type="button" className="ghost-action" onClick={() => setView('main')}>{text.back}</button>
+          <button type="button" className="ghost-action" onClick={navigateToMain}>{text.back}</button>
           <span>{text.developerArea}</span>
         </header>
 
@@ -246,13 +266,11 @@ function App() {
             <option value="id">Indonesia</option>
           </select>
         </label>
-        {isAdmin ? (
+        {isAdmin && (
           <div className="topbar-actions">
             <span className="admin-chip">{text.adminLoggedIn}</span>
             <button type="button" className="ghost-action" onClick={logoutAdmin}>{text.logout}</button>
           </div>
-        ) : (
-          <button type="button" className="ghost-action" onClick={() => setView('login')}>{text.loginButton}</button>
         )}
       </header>
 
