@@ -1,9 +1,39 @@
 import * as cheerio from 'cheerio'
 import express from 'express'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import crypto from 'node:crypto'
 import path from 'node:path'
 
 const normalizeWhitespace = (value) => value.replace(/\s+/g, ' ').trim()
+
+const defaultAdminUsername = 'developer'
+const defaultAdminPasswordHash = 'da1d9dabb3400ae28465285a6c496cff9fbbb1e4a75e1ad98c74d26019180300'
+
+const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex')
+
+const getAdminConfig = () => ({
+  passwordHash: process.env.ADMIN_PASSWORD_HASH || defaultAdminPasswordHash,
+  token: process.env.ADMIN_TOKEN || defaultAdminPasswordHash,
+  username: process.env.ADMIN_USERNAME || defaultAdminUsername,
+})
+
+const safeEqual = (left, right) => {
+  const leftBuffer = Buffer.from(String(left))
+  const rightBuffer = Buffer.from(String(right))
+
+  return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer)
+}
+
+const requireAdmin = (request, response, next) => {
+  const token = String(request.headers.authorization || '').replace(/^Bearer\s+/i, '')
+
+  if (!token || !safeEqual(sha256(token), sha256(getAdminConfig().token))) {
+    response.status(401).json({ error: 'Admin session tidak valid.' })
+    return
+  }
+
+  next()
+}
 
 const normalizeTitle = (value) =>
   normalizeWhitespace(value)
@@ -86,6 +116,75 @@ const officialGameMatchers = officialArcadeGames.map((game) => ({
 }))
 
 const officialSkillBadgeMatchers = officialSkillBadges.map(normalizeTitle)
+
+const decodeHtmlEntities = (value) =>
+  value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+
+const fetchOfficialArcadePage = async () => {
+  const response = await fetch('https://go.cloudskillsboost.google/arcade', {
+    headers: {
+      accept: 'text/html,application/xhtml+xml',
+      'accept-language': 'id,en-US;q=0.9,en;q=0.8',
+      'user-agent': 'Mozilla/5.0 Google-Arcade-Tracker/2026',
+    },
+    redirect: 'follow',
+  })
+
+  if (!response.ok) {
+    const error = new Error(`Halaman official Arcade tidak bisa dibuka. Status ${response.status}.`)
+    error.statusCode = 502
+    throw error
+  }
+
+  return decodeHtmlEntities(await response.text())
+}
+
+const parseOfficialResources = (html) => {
+  const $ = cheerio.load(html)
+  const games = []
+  const skills = []
+  const seenGames = new Set()
+  const seenSkills = new Set()
+
+  $('a[href*="/games/"]').each((index, element) => {
+    const link = $(element)
+    const card = link.closest('.shuffle-item, .col-md-3, .card, .row').first()
+    const title = normalizeWhitespace(card.find('h3, h5, p').first().text()) || normalizeWhitespace(link.text())
+    const text = normalizeWhitespace(card.text())
+    const code = /Access code:\s*([a-z0-9-]+)/i.exec(text)?.[1]
+    const points = Number(/Arcade points:\s*(\d+)/i.exec(text)?.[1] || 1)
+    const url = link.attr('href')
+    const key = normalizeTitle(title || url || String(index))
+
+    if (title && url && !seenGames.has(key)) {
+      seenGames.add(key)
+      games.push({ category: 'Official Game', code, points, title, url })
+    }
+  })
+
+  $('a[href*="/course_templates/"]').each((index, element) => {
+    const link = $(element)
+    const title = normalizeWhitespace(link.text())
+    const url = link.attr('href')
+    const key = normalizeTitle(title || url || String(index))
+
+    if (title && url && !seenSkills.has(key)) {
+      seenSkills.add(key)
+      skills.push({ category: 'Skill Badge', title, url })
+    }
+  })
+
+  return {
+    fetchedAt: new Date().toISOString(),
+    games,
+    skills,
+  }
+}
 
 const validateProfileUrl = (profileUrl) => {
   let parsedUrl
@@ -282,6 +381,29 @@ export const createApiRouter = () => {
     } catch (error) {
       response.status(error.statusCode || 502).json({
         error: error instanceof Error ? error.message : 'Gagal mengambil public profile.',
+      })
+    }
+  })
+
+  router.post('/api/admin-login', (request, response) => {
+    const username = String(request.body?.username || '')
+    const password = String(request.body?.password || '')
+    const adminConfig = getAdminConfig()
+
+    if (safeEqual(username, adminConfig.username) && safeEqual(sha256(password), adminConfig.passwordHash)) {
+      response.json({ token: adminConfig.token })
+      return
+    }
+
+    response.status(401).json({ error: 'Username atau password admin salah.' })
+  })
+
+  router.get('/api/official-arcade', requireAdmin, async (_request, response) => {
+    try {
+      response.json(parseOfficialResources(await fetchOfficialArcadePage()))
+    } catch (error) {
+      response.status(error.statusCode || 502).json({
+        error: error instanceof Error ? error.message : 'Gagal refresh halaman official Arcade.',
       })
     }
   })
