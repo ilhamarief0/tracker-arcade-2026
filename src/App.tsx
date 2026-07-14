@@ -758,6 +758,17 @@ function App() {
           })}
         </div>
       </section>}
+
+      <footer className="site-footer">
+        Created by{' '}
+        <a href="https://github.com/ilhamarief0" target="_blank" rel="noreferrer">
+          Ilham Arief
+        </a>
+        {' | '}
+        <a href="https://github.com/ilhamarief0/tracker-arcade-2026" target="_blank" rel="noreferrer">
+          Get this project
+        </a>
+      </footer>
     </main>
   )
 }
