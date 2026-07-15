@@ -12,15 +12,12 @@ export const normalizeTitle = (value) =>
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
-const defaultAdminUsername = 'developer'
-const defaultAdminPasswordHash = 'da1d9dabb3400ae28465285a6c496cff9fbbb1e4a75e1ad98c74d26019180300'
-
 export const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex')
 
 export const getAdminConfig = () => ({
-  passwordHash: process.env.ADMIN_PASSWORD_HASH || defaultAdminPasswordHash,
-  token: process.env.ADMIN_TOKEN || defaultAdminPasswordHash,
-  username: process.env.ADMIN_USERNAME || defaultAdminUsername,
+  passwordHash: process.env.ADMIN_PASSWORD_HASH,
+  token: process.env.ADMIN_TOKEN,
+  username: process.env.ADMIN_USERNAME,
 })
 
 export const safeEqual = (left, right) => {

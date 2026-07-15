@@ -6,15 +6,12 @@ import path from 'node:path'
 
 const normalizeWhitespace = (value) => value.replace(/\s+/g, ' ').trim()
 
-const defaultAdminUsername = 'developer'
-const defaultAdminPasswordHash = 'da1d9dabb3400ae28465285a6c496cff9fbbb1e4a75e1ad98c74d26019180300'
-
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex')
 
 const getAdminConfig = () => ({
-  passwordHash: process.env.ADMIN_PASSWORD_HASH || defaultAdminPasswordHash,
-  token: process.env.ADMIN_TOKEN || defaultAdminPasswordHash,
-  username: process.env.ADMIN_USERNAME || defaultAdminUsername,
+  passwordHash: process.env.ADMIN_PASSWORD_HASH,
+  token: process.env.ADMIN_TOKEN,
+  username: process.env.ADMIN_USERNAME,
 })
 
 const safeEqual = (left, right) => {
