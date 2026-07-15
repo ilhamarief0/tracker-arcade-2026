@@ -2,7 +2,7 @@
 
 > A web calculator for Google Skills Arcade 2026 participants. Paste a public Google Skills profile URL and the app checks which official Arcade games and skill badges are visible, calculates Arcade Points, and determines the prize tier.
 
-**Created by [Ilham Arief](https://github.com/ilhamarief0)** | **Link [Public Url](https://arcade.ilhamarief.my.id) | **[Repository](https://github.com/ilhamarief0/tracker-arcade-2026)**
+**Created by [Ilham Arief](https://github.com/ilhamarief0)** | **Link [Public Url](https://arcade.ilhamarief.my.id)** | **[Repository](https://github.com/ilhamarief0/tracker-arcade-2026)**
 
 ---
 
