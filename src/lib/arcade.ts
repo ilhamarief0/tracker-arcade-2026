@@ -1,6 +1,7 @@
 import { noTier, tierRules } from '../constants/tiers'
+import { leaderboardStorageKey } from '../constants/storage'
 import type { Copy } from '../i18n/copy'
-import type { Language, OfficialResourcesResponse, ProfileRecord, TierRule } from '../types/arcade'
+import type { Language, LeaderboardEntry, OfficialResourcesResponse, ProfileRecord, TierRule } from '../types/arcade'
 
 export const createSampleRecord = (text: Copy): ProfileRecord => ({
   id: 1,
@@ -107,4 +108,41 @@ export const parseHistory = (saved: string | null, text: Copy) => {
   } catch {
     return [createSampleRecord(text)]
   }
+}
+
+export const recordToLeaderboardEntry = (record: ProfileRecord): LeaderboardEntry => {
+  const tier = getTier(record)
+  return {
+    id: record.id,
+    profileUrl: record.profileUrl,
+    arcadePoints: arcadePoints(record),
+    games: record.games,
+    skillBadges: record.skillBadges,
+    tierName: tier.name,
+    tierId: tier.id,
+    checkedAt: record.checkedAt,
+  }
+}
+
+export const loadLeaderboard = (): LeaderboardEntry[] => {
+  const saved = localStorage.getItem(leaderboardStorageKey)
+
+  if (!saved) {
+    return []
+  }
+
+  try {
+    return (JSON.parse(saved) as LeaderboardEntry[]).sort((a, b) => b.arcadePoints - a.arcadePoints)
+  } catch {
+    return []
+  }
+}
+
+export const saveToLeaderboard = (entry: LeaderboardEntry): LeaderboardEntry[] => {
+  const board = loadLeaderboard().filter((item) => item.profileUrl !== entry.profileUrl)
+  board.push(entry)
+  board.sort((a, b) => b.arcadePoints - a.arcadePoints)
+  const trimmed = board.slice(0, 100)
+  localStorage.setItem(leaderboardStorageKey, JSON.stringify(trimmed))
+  return trimmed
 }

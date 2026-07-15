@@ -8,15 +8,18 @@ import {
   arcadePoints,
   getNextTier,
   getTier,
+  loadLeaderboard,
   localeForLanguage,
   missingPoints,
   parseHistory,
   parseOfficialResources,
+  recordToLeaderboardEntry,
   requirementProgress,
+  saveToLeaderboard,
   tierDisplay,
   toCsv,
 } from './lib/arcade'
-import type { AdminForm, Language, OfficialResourcesResponse, ProfileCheckResult, ProfileRecord } from './types/arcade'
+import type { AdminForm, Language, LeaderboardEntry, OfficialResourcesResponse, ProfileCheckResult, ProfileRecord } from './types/arcade'
 
 const loginPath = '/auth/login'
 
@@ -39,9 +42,19 @@ function App() {
   const [officialResources, setOfficialResources] = useState<OfficialResourcesResponse | null>(() =>
     parseOfficialResources(localStorage.getItem(officialResourcesStorageKey)),
   )
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() => loadLeaderboard())
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   const visibleGameLinks = officialResources?.games?.length ? officialResources.games : activeGameLinks
   const visibleSkillBadgeLinks = officialResources?.skills?.length ? officialResources.skills : skillBadgeLinks
+
+  const copyAccessCode = async (code: string, event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    await navigator.clipboard.writeText(code)
+    setCopiedCode(code)
+    setTimeout(() => setCopiedCode(null), 2000)
+  }
   const resultRecord = activeRecord || records[0]
   const currentTier = getTier(resultRecord)
   const nextTier = getNextTier(resultRecord)
@@ -120,6 +133,7 @@ function App() {
 
       setActiveRecord(record)
       saveRecords([record, ...records.filter((item) => item.profileUrl !== record.profileUrl)].slice(0, 10))
+      setLeaderboard(saveToLeaderboard(recordToLeaderboardEntry(record)))
       setFormStatus(text.checkSuccessStatus)
     } catch (error) {
       const failedRecord: ProfileRecord = {
@@ -389,7 +403,21 @@ function App() {
                 <a href={lab.url} target="_blank" rel="noreferrer" className="resource-card" key={lab.title}>
                   <span>{lab.category}{lab.points ? ` - ${lab.points} point` : ''}</span>
                   <strong>{lab.title}</strong>
-                  <p>{lab.code ? text.gameAccessCode(lab.code) : text.labClick}</p>
+                  {lab.code ? (
+                    <div className="code-row">
+                      <span className="code-label">Access code:</span>
+                      <code className="code-value">{lab.code}</code>
+                      <button
+                        type="button"
+                        className="copy-btn"
+                        onClick={(e) => copyAccessCode(lab.code!, e)}
+                      >
+                        {copiedCode === lab.code ? text.gameCopied : text.gameCopyCode}
+                      </button>
+                    </div>
+                  ) : (
+                    <p>{text.labClick}</p>
+                  )}
                 </a>
               ))}
             </div>
@@ -420,6 +448,58 @@ function App() {
             ))}
           </div>
         </details>
+      </section>
+
+      <section className="leaderboard-panel" id="leaderboard">
+        <div className="panel-heading">
+          <div>
+            <p className="section-kicker">{text.leaderboardKicker}</p>
+            <h2>{text.leaderboardTitle}</h2>
+          </div>
+        </div>
+
+        {leaderboard.length === 0 ? (
+          <p className="leaderboard-empty">{text.leaderboardEmpty}</p>
+        ) : (
+          <div className="leaderboard-table-wrap">
+            <table className="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>{text.leaderboardRank}</th>
+                  <th>{text.leaderboardProfile}</th>
+                  <th>{text.leaderboardPoints}</th>
+                  <th>{text.leaderboardTier}</th>
+                  <th>{text.leaderboardGames}</th>
+                  <th>{text.leaderboardSkills}</th>
+                  <th>{text.leaderboardUpdated}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboard.map((entry, index) => (
+                  <tr key={entry.id} className={index < 3 ? `leaderboard-row top-${index + 1}` : 'leaderboard-row'}>
+                    <td className="leaderboard-rank">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </td>
+                    <td className="leaderboard-profile">
+                      <a href={entry.profileUrl} target="_blank" rel="noreferrer">
+                        {entry.profileUrl.split('/public_profiles/')[1]?.slice(0, 12) || entry.profileUrl}
+                      </a>
+                    </td>
+                    <td className="leaderboard-points">{entry.arcadePoints}</td>
+                    <td>
+                      <span className={`tier-chip ${entry.tierId !== 'none' ? 'achieved' : ''}`}>
+                        {entry.tierName}
+                      </span>
+                    </td>
+                    <td>{entry.games}</td>
+                    <td>{entry.skillBadges}</td>
+                    <td className="leaderboard-date">{entry.checkedAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       {isAdmin && <section className="history-panel">

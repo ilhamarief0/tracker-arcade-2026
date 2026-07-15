@@ -552,7 +552,51 @@
   color: var(--muted);
   font-size: 0.84rem;
   line-height: 1.45;
-  overflow-wrap: anywhere;
+}
+
+.code-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.code-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.code-value {
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 0;
+  padding: 3px 7px;
+  color: var(--blue);
+  background: rgba(0, 240, 255, 0.08);
+  font-family: 'Google Sans Mono', 'Space Grotesk', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.copy-btn {
+  border: 1px solid var(--yellow);
+  border-radius: 0;
+  padding: 3px 8px;
+  color: var(--yellow);
+  background: rgba(255, 213, 72, 0.1);
+  font-family: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.copy-btn:hover {
+  color: #142137;
+  background: var(--yellow);
 }
 
 .profile-link {
@@ -660,6 +704,114 @@
   font-size: 0.9rem;
   font-weight: 850;
   text-align: center;
+}
+
+.leaderboard-panel {
+  border: 2px solid var(--line);
+  border-radius: 0;
+  padding: 22px;
+  margin: 14px 0;
+  background:
+    linear-gradient(180deg, rgba(29, 17, 80, 0.95), rgba(8, 5, 31, 0.97)),
+    radial-gradient(circle at 0 0, rgba(0, 240, 255, 0.18), transparent 22rem),
+    radial-gradient(circle at 100% 0, rgba(255, 61, 127, 0.16), transparent 20rem);
+  box-shadow: var(--shadow), var(--pixel-border);
+}
+
+.leaderboard-panel h2 {
+  margin-top: 6px;
+  color: var(--text);
+  font-family: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 1.35;
+  text-shadow: 3px 3px 0 var(--purple);
+}
+
+.leaderboard-empty {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  text-align: center;
+  padding: 28px 14px;
+}
+
+.leaderboard-table-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.leaderboard-table th {
+  color: var(--yellow);
+  font-family: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 2px solid var(--line);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.leaderboard-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(123, 196, 255, 0.1);
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+.leaderboard-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.leaderboard-row.top-1 {
+  background: rgba(255, 213, 72, 0.1);
+}
+
+.leaderboard-row.top-2 {
+  background: rgba(192, 192, 192, 0.08);
+}
+
+.leaderboard-row.top-3 {
+  background: rgba(205, 127, 50, 0.08);
+}
+
+.leaderboard-rank {
+  font-weight: 900;
+  font-size: 1rem;
+  width: 48px;
+  text-align: center;
+}
+
+.leaderboard-profile a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+
+.leaderboard-profile a:hover {
+  text-decoration: underline;
+}
+
+.leaderboard-points {
+  color: var(--yellow) !important;
+  font-family: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.leaderboard-date {
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .site-footer a {
@@ -887,6 +1039,36 @@
   .site-footer {
     font-size: 0.78rem;
     line-height: 1.6;
+  }
+
+  .leaderboard-panel {
+    padding: 14px;
+  }
+
+  .leaderboard-table {
+    font-size: 0.72rem;
+  }
+
+  .leaderboard-table th {
+    font-size: 0.5rem;
+    padding: 8px 5px;
+  }
+
+  .leaderboard-table td {
+    padding: 8px 5px;
+  }
+
+  .leaderboard-rank {
+    font-size: 0.82rem;
+    width: 36px;
+  }
+
+  .leaderboard-points {
+    font-size: 0.72rem !important;
+  }
+
+  .leaderboard-date {
+    font-size: 0.62rem;
   }
 }
 

@@ -61,3 +61,14 @@ export type OfficialResourcesResponse = {
   games: LabLink[]
   skills: LabLink[]
 }
+
+export type LeaderboardEntry = {
+  id: number
+  profileUrl: string
+  arcadePoints: number
+  games: number
+  skillBadges: number
+  tierName: string
+  tierId: TierId
+  checkedAt: string
+}
