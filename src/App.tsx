@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { archivedGameNames, activeGameLinks, skillBadgeLinks } from './constants/labs'
-import { tierRules } from './constants/tiers'
+import { activeGameLinks, archivedGameNames, skillBadgeLinks } from './constants/labs'
 import { adminStorageKey, languageStorageKey, officialResourcesStorageKey, storageKey } from './constants/storage'
+import { tierRules } from './constants/tiers'
 import { copy } from './i18n/copy'
 import {
   arcadePoints,
