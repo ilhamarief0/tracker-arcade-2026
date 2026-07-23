@@ -44,6 +44,12 @@ function App() {
   )
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() => loadLeaderboard())
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  const suggestions = records
+    .filter((record) => record.checkStatus === 'checked' && record.profileUrl)
+    .filter((record) => !profileUrl || record.profileUrl.toLowerCase().includes(profileUrl.toLowerCase()))
+    .slice(0, 5)
 
   const visibleGameLinks = officialResources?.games?.length ? officialResources.games : activeGameLinks
   const visibleSkillBadgeLinks = officialResources?.skills?.length ? officialResources.skills : skillBadgeLinks
@@ -302,13 +308,36 @@ function App() {
           <h1>{text.heroTitle}</h1>
           <p className="hero-text">{text.heroText}</p>
           <form className="profile-form" onSubmit={runCheck}>
-            <input
-              value={profileUrl}
-              onChange={(event) => setProfileUrl(event.target.value)}
-              placeholder="https://www.skills.google/public_profiles/..."
-              type="url"
-              required
-            />
+            <div className="input-wrapper">
+              <input
+                value={profileUrl}
+                onChange={(event) => setProfileUrl(event.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                placeholder="https://www.skills.google/public_profiles/..."
+                type="url"
+                required
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="suggestions-dropdown">
+                  {suggestions.map((record) => (
+                    <button
+                      type="button"
+                      className="suggestion-item"
+                      key={record.id}
+                      onMouseDown={(event) => {
+                        event.preventDefault()
+                        setProfileUrl(record.profileUrl)
+                        setShowSuggestions(false)
+                      }}
+                    >
+                      <span className="suggestion-name">{record.profileName || 'Unknown'}</span>
+                      <span className="suggestion-url">{record.profileUrl.split('/public_profiles/')[1] || record.profileUrl}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button type="submit" disabled={isChecking}>{isChecking ? text.submitting : text.submitButton}</button>
           </form>
           <div className="hero-actions">
