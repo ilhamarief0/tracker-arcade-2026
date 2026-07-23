@@ -814,6 +814,86 @@
   white-space: nowrap;
 }
 
+.profile-info-box {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.profile-info-box > div {
+  border: 1px solid rgba(123, 196, 255, 0.18);
+  border-radius: 0;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.profile-info-box span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.profile-info-box strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.badges-panel {
+  border: 2px solid var(--line);
+  border-radius: 0;
+  padding: 22px;
+  margin: 14px 0;
+  background:
+    linear-gradient(180deg, rgba(29, 17, 80, 0.95), rgba(8, 5, 31, 0.97)),
+    radial-gradient(circle at 0 0, rgba(0, 240, 255, 0.18), transparent 22rem);
+  box-shadow: var(--shadow), var(--pixel-border);
+}
+
+.badges-panel h2 {
+  margin-top: 6px;
+  color: var(--text);
+  font-family: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 1.35;
+  text-shadow: 3px 3px 0 var(--purple);
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.badge-card {
+  border: 2px solid rgba(123, 196, 255, 0.18);
+  border-radius: 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+}
+
+.badge-card strong {
+  display: block;
+  color: var(--text);
+  font-family: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  font-size: 0.62rem;
+  line-height: 1.5;
+}
+
+.badge-card p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .site-footer a {
   color: var(--yellow);
   text-decoration: none;
@@ -981,6 +1061,22 @@
   .compact-tier-list {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .profile-info-box {
+    grid-template-columns: 1fr;
+  }
+
+  .badges-panel {
+    padding: 14px;
+  }
+
+  .badges-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .badge-card strong {
+    font-size: 0.56rem;
   }
 
   .tier-chip,

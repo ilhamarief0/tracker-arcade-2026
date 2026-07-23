@@ -18,12 +18,16 @@ export type OfficialGame = {
 
 export type ProfileCheckResult = {
   arcadePoints: number
+  allBadges?: { title: string; earned: string }[]
   badges: number
   badgeTitles?: string[]
   games: number
   officialGames?: OfficialGame[]
   officialSkillBadges?: string[]
   profileUrl: string
+  profileName?: string
+  league?: string
+  leaguePoints?: number
   skillBadges: number
   status: 'checked'
 }
@@ -31,11 +35,15 @@ export type ProfileCheckResult = {
 export type ProfileRecord = {
   id: number
   profileUrl: string
+  profileName: string
+  league: string
+  leaguePoints: number
   arcadePoints: number
   games: number
   badges: number
   skillBadges: number
   badgeTitles: string[]
+  allBadges: { title: string; earned: string }[]
   officialGames: OfficialGame[]
   officialSkillBadges: string[]
   checkedAt: string

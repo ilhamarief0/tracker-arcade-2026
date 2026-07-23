@@ -142,41 +142,33 @@ const officialSkillBadgeMatchers = officialSkillBadges.map(normalizeTitle)
 
 // ── Badge parsing ─────────────────────────────────────────────────────────────
 
-const countMatches = (html, patterns) => {
-  const matches = new Set()
-  for (const pattern of patterns) {
-    for (const match of html.matchAll(pattern)) {
-      const value = normalizeWhitespace(match[1] || match[0])
-      if (value) matches.add(value.toLowerCase())
-    }
-  }
-  return matches.size
-}
-
-const parseNumberNearLabels = (text, labels) => {
-  for (const label of labels) {
-    const afterLabel = new RegExp(`${label}[^0-9]{0,24}(\\d+)`, 'i').exec(text)
-    const beforeLabel = new RegExp(`(\\d+)[^a-z0-9]{0,24}${label}`, 'i').exec(text)
-    if (afterLabel?.[1]) return Number(afterLabel[1])
-    if (beforeLabel?.[1]) return Number(beforeLabel[1])
-  }
-  return 0
-}
-
 const getSkillsGoogleBadges = ($) => {
   const badges = []
   const seen = new Set()
 
-  $('[data-badge-id], [class*="badge-card"], [class*="BadgeCard"], [class*="quest-card"]').each((_, element) => {
+  $('.profile-badge').each((_, element) => {
     const el = $(element)
-    const title = normalizeWhitespace(el.find('[class*="title"], [class*="Title"], h3, h4').first().text() || el.attr('aria-label') || el.attr('title') || '')
-    const description = normalizeWhitespace(el.find('[class*="description"], [class*="Description"], p').first().text() || '')
+    const title = normalizeWhitespace(el.find('.ql-title-medium').first().text())
+    const earned = normalizeWhitespace(el.find('.ql-body-medium').first().text())
     const key = normalizeTitle(title)
     if (title && key && !seen.has(key)) {
       seen.add(key)
-      badges.push({ title, description })
+      badges.push({ title, description: earned })
     }
   })
+
+  if (badges.length === 0) {
+    $('[data-badge-id], [class*="badge-card"], [class*="BadgeCard"], [class*="quest-card"]').each((_, element) => {
+      const el = $(element)
+      const title = normalizeWhitespace(el.find('[class*="title"], [class*="Title"], h3, h4').first().text() || el.attr('aria-label') || el.attr('title') || '')
+      const description = normalizeWhitespace(el.find('[class*="description"], [class*="Description"], p').first().text() || '')
+      const key = normalizeTitle(title)
+      if (title && key && !seen.has(key)) {
+        seen.add(key)
+        badges.push({ title, description })
+      }
+    })
+  }
 
   if (badges.length === 0) {
     $('img[alt]').each((_, element) => {
@@ -190,6 +182,13 @@ const getSkillsGoogleBadges = ($) => {
   }
 
   return badges
+}
+
+const getLeagueInfo = ($) => {
+  const league = normalizeWhitespace($('.profile-league h2, .profile-league .ql-headline-medium').first().text())
+  const pointsText = normalizeWhitespace($('.profile-league strong').first().text())
+  const points = Number(/(\d+)/.exec(pointsText)?.[1] || 0)
+  return { league, points }
 }
 
 const findOfficialArcadeGames = (badges) => {
@@ -221,35 +220,29 @@ const findOfficialSkillBadges = (badges) => {
 
 export const parseProfile = (html, profileUrl) => {
   const $ = cheerio.load(html)
-  const pageText = normalizeWhitespace($('body').text())
-  const skillsGoogleBadges = getSkillsGoogleBadges($)
-  const badgeCardCount = skillsGoogleBadges.length || $('[class*="badge"], [class*="Badge"], a[href*="/quests/"], a[href*="/games/"]').length
-  const badgeTextCount = countMatches(html, [
-    /alt=["']([^"']*(?:badge|skill badge|game)[^"']*)["']/gi,
-    /title=["']([^"']*(?:badge|skill badge|game)[^"']*)["']/gi,
-    /aria-label=["']([^"']*(?:badge|skill badge|game)[^"']*)["']/gi,
-  ])
-  const officialGames = findOfficialArcadeGames(skillsGoogleBadges)
-  const officialMatchedSkillBadges = findOfficialSkillBadges(skillsGoogleBadges)
+  const allBadges = getSkillsGoogleBadges($)
+  const leagueInfo = getLeagueInfo($)
+  const profileName = normalizeWhitespace($('h1.ql-display-small, h1').first().text())
+  const officialGames = findOfficialArcadeGames(allBadges)
+  const officialMatchedSkillBadges = findOfficialSkillBadges(allBadges)
   const officialGamePoints = officialGames.reduce((sum, game) => sum + game.points, 0)
   const games = officialGames.length
   const skillBadges = officialMatchedSkillBadges.length
-  const badges = Math.max(
-    parseNumberNearLabels(pageText, ['badges?', 'earned badges?', 'completion badges?']),
-    badgeCardCount,
-    badgeTextCount,
-    skillBadges,
-  )
+  const totalBadges = allBadges.length
   const arcadePoints = officialGamePoints + Math.floor(skillBadges / 2)
 
   return {
-    badges,
-    badgeTitles: skillsGoogleBadges.map((badge) => badge.title),
+    badges: totalBadges,
+    badgeTitles: allBadges.map((badge) => badge.title),
+    allBadges: allBadges.map((badge) => ({ title: badge.title, earned: badge.description })),
     games,
     arcadePoints,
     officialGames: officialGames.map((game) => ({ points: game.points, title: game.title })),
     officialSkillBadges: officialMatchedSkillBadges,
     profileUrl,
+    profileName,
+    league: leagueInfo.league,
+    leaguePoints: leagueInfo.points,
     skillBadges,
     status: 'checked',
   }

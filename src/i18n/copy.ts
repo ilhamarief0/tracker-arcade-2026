@@ -73,6 +73,12 @@ export const copy = {
     leaderboardGames: 'Games',
     leaderboardSkills: 'Skills',
     leaderboardUpdated: 'Updated',
+    profileName: 'Name',
+    profileLeague: 'League',
+    profileLeaguePoints: 'League Points',
+    allBadges: 'All Badges',
+    allBadgesEmpty: 'No badges found on this profile.',
+    totalBadges: 'Total Badges',
   },
   id: {
     activeGames: 'Game Aktif Juli',
@@ -146,6 +152,12 @@ export const copy = {
     leaderboardGames: 'Games',
     leaderboardSkills: 'Skills',
     leaderboardUpdated: 'Diperbarui',
+    profileName: 'Nama',
+    profileLeague: 'League',
+    profileLeaguePoints: 'League Points',
+    allBadges: 'Semua Badge',
+    allBadgesEmpty: 'Tidak ada badge ditemukan di profile ini.',
+    totalBadges: 'Total Badge',
   },
 }
 

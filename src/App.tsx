@@ -119,11 +119,15 @@ function App() {
       const record: ProfileRecord = {
         id: Date.now(),
         profileUrl: result.profileUrl,
+        profileName: result.profileName || 'Unknown',
+        league: result.league || '',
+        leaguePoints: result.leaguePoints || 0,
         arcadePoints: result.arcadePoints,
         games: result.games,
         badges: result.badges,
         skillBadges: result.skillBadges,
         badgeTitles: result.badgeTitles || [],
+        allBadges: result.allBadges || [],
         officialGames: result.officialGames || [],
         officialSkillBadges: result.officialSkillBadges || [],
         checkedAt: new Date().toLocaleString(localeForLanguage(language)),
@@ -139,11 +143,15 @@ function App() {
       const failedRecord: ProfileRecord = {
         id: Date.now(),
         profileUrl: url,
+        profileName: 'Unknown',
+        league: '',
+        leaguePoints: 0,
         arcadePoints: 0,
         games: 0,
         badges: 0,
         skillBadges: 0,
         badgeTitles: [],
+        allBadges: [],
         officialGames: [],
         officialSkillBadges: [],
         checkedAt: new Date().toLocaleString(localeForLanguage(language)),
@@ -325,7 +333,16 @@ function App() {
             <div><span>Points</span><strong>{points}</strong></div>
             <div><span>Games</span><strong>{resultRecord.games}</strong></div>
             <div><span>Skills</span><strong>{resultRecord.skillBadges}</strong></div>
+            <div><span>{text.totalBadges}</span><strong>{resultRecord.badges}</strong></div>
           </div>
+
+          {resultRecord.profileName && resultRecord.profileName !== 'Unknown' && (
+            <div className="profile-info-box">
+              <div><span>{text.profileName}</span><strong>{resultRecord.profileName}</strong></div>
+              {resultRecord.league && <div><span>{text.profileLeague}</span><strong>{resultRecord.league}</strong></div>}
+              {resultRecord.leaguePoints > 0 && <div><span>{text.profileLeaguePoints}</span><strong>{resultRecord.leaguePoints}</strong></div>}
+            </div>
+          )}
 
           <p className="next-summary">
             {nextTier ? text.tierNeed(pointsNeeded) : text.nextLegend}
@@ -357,6 +374,25 @@ function App() {
           <p className="check-message">{resultRecord.checkMessage}</p>
         </aside>
       </section>
+
+      {resultRecord.allBadges.length > 0 && (
+        <section className="badges-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">{text.allBadges}</p>
+              <h2>{resultRecord.allBadges.length} {text.allBadges.toLowerCase()}</h2>
+            </div>
+          </div>
+          <div className="badges-grid">
+            {resultRecord.allBadges.map((badge) => (
+              <div className="badge-card" key={badge.title}>
+                <strong>{badge.title}</strong>
+                {badge.earned && <p>{badge.earned}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {isAdmin && <section className="admin-panel">
         <div className="panel-heading compact">

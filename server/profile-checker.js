@@ -212,38 +212,6 @@ const validateProfileUrl = (profileUrl) => {
   return { url: parsedUrl.toString() }
 }
 
-const countMatches = (html, patterns) => {
-  const matches = new Set()
-
-  for (const pattern of patterns) {
-    for (const match of html.matchAll(pattern)) {
-      const value = normalizeWhitespace(match[1] || match[0])
-      if (value) {
-        matches.add(value.toLowerCase())
-      }
-    }
-  }
-
-  return matches.size
-}
-
-const parseNumberNearLabels = (text, labels) => {
-  for (const label of labels) {
-    const afterLabel = new RegExp(`${label}[^0-9]{0,24}(\\d+)`, 'i').exec(text)
-    const beforeLabel = new RegExp(`(\\d+)[^a-z0-9]{0,24}${label}`, 'i').exec(text)
-
-    if (afterLabel?.[1]) {
-      return Number(afterLabel[1])
-    }
-
-    if (beforeLabel?.[1]) {
-      return Number(beforeLabel[1])
-    }
-  }
-
-  return 0
-}
-
 const getSkillsGoogleBadges = ($) => {
   return $('.profile-badge')
     .map((index, element) => {
@@ -251,12 +219,19 @@ const getSkillsGoogleBadges = ($) => {
       const title = normalizeWhitespace(badge.find('.ql-title-medium').first().text())
       const earned = normalizeWhitespace(badge.find('.ql-body-medium').first().text())
       const modalId = badge.find('ql-button[modal]').attr('modal')
-      const description = modalId ? normalizeWhitespace($(`#${modalId}`).text()) : ''
+      const description = modalId ? normalizeWhitespace($(`#${modalId}`).text()) : earned
 
       return { description, earned, title }
     })
     .get()
     .filter((badge) => badge.title)
+}
+
+const getLeagueInfo = ($) => {
+  const league = normalizeWhitespace($('.profile-league h2, .profile-league .ql-headline-medium').first().text())
+  const pointsText = normalizeWhitespace($('.profile-league strong').first().text())
+  const points = Number(/(\d+)/.exec(pointsText)?.[1] || 0)
+  return { league, points }
 }
 
 const findOfficialArcadeGames = (badges) => {
@@ -298,36 +273,29 @@ const findOfficialSkillBadges = (badges) => {
 
 const parseProfile = (html, profileUrl) => {
   const $ = cheerio.load(html)
-  const pageText = normalizeWhitespace($('body').text())
-  const skillsGoogleBadges = getSkillsGoogleBadges($)
-  const badgeCardCount = skillsGoogleBadges.length || $('[class*="badge"], [class*="Badge"], a[href*="/quests/"], a[href*="/games/"]').length
-  const badgeTextCount = countMatches(html, [
-    /alt=["']([^"']*(?:badge|skill badge|game)[^"']*)["']/gi,
-    /title=["']([^"']*(?:badge|skill badge|game)[^"']*)["']/gi,
-    /aria-label=["']([^"']*(?:badge|skill badge|game)[^"']*)["']/gi,
-  ])
-  const officialGames = findOfficialArcadeGames(skillsGoogleBadges)
-  const officialMatchedSkillBadges = findOfficialSkillBadges(skillsGoogleBadges)
+  const allBadges = getSkillsGoogleBadges($)
+  const leagueInfo = getLeagueInfo($)
+  const profileName = normalizeWhitespace($('h1.ql-display-small, h1').first().text())
+  const officialGames = findOfficialArcadeGames(allBadges)
+  const officialMatchedSkillBadges = findOfficialSkillBadges(allBadges)
   const officialGamePoints = officialGames.reduce((sum, game) => sum + game.points, 0)
   const games = officialGames.length
   const skillBadges = officialMatchedSkillBadges.length
-  const badges = Math.max(
-    parseNumberNearLabels(pageText, ['badges?', 'earned badges?', 'completion badges?']),
-    badgeCardCount,
-    badgeTextCount,
-    skillBadges,
-  )
-
+  const badges = allBadges.length
   const arcadePoints = officialGamePoints + Math.floor(skillBadges / 2)
 
   return {
     badges,
-    badgeTitles: skillsGoogleBadges.map((badge) => badge.title),
+    badgeTitles: allBadges.map((badge) => badge.title),
+    allBadges: allBadges.map((badge) => ({ title: badge.title, earned: badge.earned })),
     games,
     arcadePoints,
     officialGames: officialGames.map((game) => ({ points: game.points, title: game.title })),
     officialSkillBadges: officialMatchedSkillBadges,
     profileUrl,
+    profileName,
+    league: leagueInfo.league,
+    leaguePoints: leagueInfo.points,
     skillBadges,
     status: 'checked',
   }
